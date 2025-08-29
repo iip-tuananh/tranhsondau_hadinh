@@ -206,7 +206,7 @@
         </div>
 
         <!-- lớp tối để chữ dễ nhìn -->
-        <div class="video-scrim"></div>
+{{--        <div class="video-scrim"></div>--}}
 
         <!-- Nội dung demo (tuỳ ý xoá/sửa) -->
 {{--        <div class="video-content">--}}
