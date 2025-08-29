@@ -101,7 +101,7 @@ class BannerController extends Controller
             $object->save();
 
             if ($request->image) {
-                FileHelper::uploadFile($request->image, 'banners', $object->id, ThisModel::class, 'image', 99);
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
             }
 
             DB::commit();
@@ -152,14 +152,13 @@ class BannerController extends Controller
             $object->position = $request->position;
             $object->save();
 
-            if ($request->image) {
-
-                if ($object->image) {
-                    FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
+            if($request->image) {
+                if($object->image) {
+                    FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
                 }
-
-                FileHelper::uploadFile($request->image, 'banners', $object->id, ThisModel::class, 'image', 99);
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
             }
+
 
             DB::commit();
             $json->success = true;
@@ -181,8 +180,9 @@ class BannerController extends Controller
                 "alert-type" => "warning"
             );
         } else {
+
             if (isset($object->image)) {
-                FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
+                FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
             }
             $object->delete();
             $message = array(

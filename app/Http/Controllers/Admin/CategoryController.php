@@ -137,12 +137,12 @@ class CategoryController extends Controller
 			}
 
 			if($request->image) {
-				FileHelper::uploadFile($request->image, 'categories', $object->id, ThisModel::class, 'image', 99);
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
 			}
 
 			if($request->banner) {
-				FileHelper::uploadFile($request->banner, 'category_banners', $object->id, ThisModel::class, 'banner', 99);
-			}
+                FileHelper::uploadFileToCloudflare($request->banner, $object->id, ThisModel::class, 'banner');
+            }
 
 			DB::commit();
 			$json->success = true;
@@ -241,21 +241,21 @@ class CategoryController extends Controller
 				}
 			}
 
-			if($request->image) {
-				if($object->image) {
-					FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
-				}
-				FileHelper::uploadFile($request->image, 'categories', $object->id, ThisModel::class, 'image', 99);
-			}
+            if($request->image) {
+                if($object->image) {
+                    FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
+                }
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
+            }
 
-			if($request->banner) {
-				if($object->banner) {
-					FileHelper::forceDeleteFiles($object->banner->id, $object->id, ThisModel::class, 'banner');
-				}
-				FileHelper::uploadFile($request->banner, 'category_banners', $object->id, ThisModel::class, 'banner',99);
-			}
+            if($request->banner) {
+                if($object->banner) {
+                    FileHelper::deleteFileFromCloudflare($object->banner, $object->id, ThisModel::class, 'banner');
+                }
+                FileHelper::uploadFileToCloudflare($request->banner, $object->id, ThisModel::class, 'banner');
+            }
 
-			DB::commit();
+            DB::commit();
 			$json->success = true;
 			$json->message = "Thao tác thành công!";
 			$json->data = $object;
@@ -276,11 +276,12 @@ class CategoryController extends Controller
 			);
 		} else {
             if (isset($object->image)) {
-                FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
+                FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
             }
             if (isset($object->banner)) {
-                FileHelper::forceDeleteFiles($object->banner->id, $object->id, ThisModel::class, 'banner');
+                FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'banner');
             }
+
 			$object->delete();
 			$message = array(
 				"message" => "Thao tác thành công!",

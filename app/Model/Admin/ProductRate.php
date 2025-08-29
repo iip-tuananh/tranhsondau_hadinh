@@ -73,6 +73,7 @@ class ProductRate extends Model
             ->firstOrFail();
     }
 
+
     public function syncGalleries($galleries)
     {
         if ($galleries) {
@@ -80,12 +81,10 @@ class ProductRate extends Model
             foreach ($galleries as $g) {
                 if (isset($g['id'])) array_push($exist_ids, $g['id']);
             }
-
             $deleted = ProductRateGallery::where('product_rate_id', $this->id)->whereNotIn('id', $exist_ids)->get();
             foreach ($deleted as $item) {
                 if ($item->image) {
-                    FileHelper::forceDeleteFiles($item->image->id, $item->id, ProductRateGallery::class, null);
-                    $item->image->removeFromDB();
+                    FileHelper::deleteFileFromCloudflare($item->image, $item->id, ProductRateGallery::class);
                 }
                 $item->removeFromDB();
             }
@@ -101,20 +100,23 @@ class ProductRate extends Model
                 $gallery->save();
 
                 if (isset($g['image'])) {
-                    if ($gallery->image) $gallery->image->removeFromDB();
+                    if ($gallery->image) {
+                        FileHelper::deleteFileFromCloudflare($gallery->image, $gallery->id, ProductRateGallery::class);
+                        $gallery->image->removeFromDB();
+                    }
                     $file = $g['image'];
-                    FileHelper::uploadFile($file, 'product_rate', $gallery->id, ProductRateGallery::class, null, 1);
+                    FileHelper::uploadFileToCloudflare($file, $gallery->id, ProductRateGallery::class, null);
                 }
             }
         } else {
-            $galleries = $this->galleries;
-            foreach ($galleries as $gallery) {
-                if ($gallery->image) {
-                    FileHelper::forceDeleteFiles($gallery->image->id, $gallery->id, ProductRateGallery::class, null);
-                    $gallery->image->removeFromDB();
+            $deleted = ProductRateGallery::where('product_rate_id', $this->id)->get();
+            foreach ($deleted as $item) {
+                if ($item->image) {
+                    FileHelper::deleteFileFromCloudflare($item->image, $item->id, ProductRateGallery::class);
                 }
+                $item->removeFromDB();
             }
-            $this->galleries()->delete();
         }
     }
+
 }

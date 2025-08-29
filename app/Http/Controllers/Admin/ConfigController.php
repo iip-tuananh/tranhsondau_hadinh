@@ -112,19 +112,20 @@ class ConfigController extends Controller
 
 			$object->save();
 
-			if($request->image) {
-				if($object->image) {
-					FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
-				}
-				FileHelper::uploadFile($request->image, 'configs', $object->id, ThisModel::class, 'image',99);
-			}
+            if($request->image) {
+                if($object->image) {
+                    FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
+                }
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
+            }
 
             if($request->favicon) {
                 if($object->favicon) {
-                    FileHelper::forceDeleteFiles($object->favicon->id, $object->id, ThisModel::class, 'favicon');
+                    FileHelper::deleteFileFromCloudflare($object->favicon, $object->id, ThisModel::class, 'favicon');
                 }
-                FileHelper::uploadFile($request->favicon, 'configs', $object->id, ThisModel::class, 'favicon',7);
+                FileHelper::uploadFileToCloudflare($request->favicon, $object->id, ThisModel::class, 'favicon');
             }
+
 
             $object->syncGalleries($request->galleries);
 

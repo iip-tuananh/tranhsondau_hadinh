@@ -163,8 +163,9 @@ class PostCategoryController extends Controller
 			}
 
 			if($request->image) {
-				FileHelper::uploadFile($request->image, 'post_categories', $object->id, ThisModel::class, 'image',1);
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
 			}
+
 			DB::commit();
 			$json->success = true;
 			$json->message = "Thao tác thành công!";
@@ -250,12 +251,12 @@ class PostCategoryController extends Controller
 				}
 			}
 
-			if($request->image) {
-				if($object->image) {
-					FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
-				}
-				FileHelper::uploadFile($request->image, 'post_categories', $object->id, ThisModel::class, 'image',1);
-			}
+            if($request->image) {
+                if($object->image) {
+                    FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
+                }
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
+            }
 
 
 			DB::commit();
@@ -279,8 +280,9 @@ class PostCategoryController extends Controller
 			);
 		} else {
             if (isset($object->image)) {
-                FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
+                FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
             }
+
 			$object->delete();
 			$message = array(
 				"message" => "Thao tác thành công!",

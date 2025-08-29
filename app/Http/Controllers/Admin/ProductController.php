@@ -146,9 +146,10 @@ class ProductController extends Controller
             $object->unit_id = $request->unit_id;
 			$object->save();
 
-			FileHelper::uploadFile($request->image, 'products', $object->id, ThisModel::class, 'image',99);
+            FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
 
 			$object->syncGalleries($request->galleries);
+
 			$object->syncDocuments($request->attachments, 'products/attachments/');
             if($request->tag_ids) $object->addTags($request->tag_ids);
 
@@ -230,14 +231,16 @@ class ProductController extends Controller
             $object->unit_id = $request->unit_id;
 			$object->save();
 
-			if($request->image) {
-				if($object->image) {
-					FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
-				}
-				FileHelper::uploadFile($request->image, 'products', $object->id, ThisModel::class, 'image',99);
-			}
 
-			$object->syncGalleries($request->galleries);
+            if($request->image) {
+                if($object->image) {
+                    FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
+                }
+                FileHelper::uploadFileToCloudflare($request->image, $object->id, ThisModel::class, 'image');
+            }
+
+            $object->syncGalleries($request->galleries);
+
             $object->syncDocuments($request->attachments, 'products/attachments/');
 
             if($request->tag_ids) $object->updateTags($request->tag_ids);
@@ -279,17 +282,18 @@ class ProductController extends Controller
 			);
 		} else {
             if (isset($object->image)) {
-                FileHelper::forceDeleteFiles($object->image->id, $object->id, ThisModel::class, 'image');
+                FileHelper::deleteFileFromCloudflare($object->image, $object->id, ThisModel::class, 'image');
             }
-            if (isset($object->galleries)) {
+
+            if($object->galleries->count() > 0) {
                 foreach ($object->galleries as $gallery) {
                     if ($gallery->image) {
-                        FileHelper::forceDeleteFiles($gallery->image->id, $gallery->id, ProductGallery::class);
-                        $gallery->image->removeFromDB();
+                        FileHelper::deleteFileFromCloudflare($gallery->image, $gallery->id, ProductGallery::class);
                     }
                     $gallery->removeFromDB();
                 }
             }
+
 			$object->delete();
 			$message = array(
 				"message" => "Thao tác thành công!",
